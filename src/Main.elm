@@ -4,31 +4,60 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Time exposing (Time)
-import Random
-import Color
+import Random exposing (Generator)
+import Color exposing (Color)
 import Array
+
+
+dotCount =
+    300
+
+
+updateDotsInterval =
+    Time.second
 
 
 type alias Model =
     { isTicking : Bool
     , time : Maybe Time
-    , total : Int
-    , length : Int
+    , totalTicks : Int
+    , dots : List Color
     }
 
 
 init =
-    { isTicking = True, time = Nothing, total = 0, length = 0 } ! []
+    { isTicking = True, time = Nothing, totalTicks = 0, dots = [] } ! []
 
 
 type Msg
     = ToggleIsTicking
     | Tick Time
-    | SetRandomListLength Int
+    | SetDots (List Color)
 
 
-randomListLengthGenerator =
-    Random.int 0 1000
+randomColorGenerator =
+    let
+        colors =
+            Array.fromList
+                [ Color.lightRed
+                , Color.lightOrange
+                , Color.lightYellow
+                , Color.lightGreen
+                , Color.lightBlue
+                , Color.lightPurple
+                ]
+    in
+        Random.int 0 (Array.length colors - 1)
+            |> Random.map
+                (\n ->
+                    colors
+                        |> Array.get n
+                        |> Maybe.withDefault Color.white
+                )
+
+
+dotsGenerator =
+    Random.list dotCount randomColorGenerator
 
 
 update msg model =
@@ -39,24 +68,17 @@ update msg model =
         Tick time ->
             { model
                 | time = Just time
-                , total = model.total + 1
+                , totalTicks = model.totalTicks + 1
             }
-                ! [ Random.generate
-                        SetRandomListLength
-                        randomListLengthGenerator
-                  ]
+                ! [ Random.generate SetDots dotsGenerator ]
 
-        SetRandomListLength length ->
-            { model | length = length } ! []
-
-
-tickInterval =
-    Time.second / 2
+        SetDots dots ->
+            { model | dots = dots } ! []
 
 
 subscriptions model =
     if model.isTicking then
-        Time.every tickInterval Tick
+        Time.every updateDotsInterval Tick
     else
         Sub.none
 
@@ -67,12 +89,13 @@ view model =
             model.time
                 |> Maybe.map toString
                 |> Maybe.withDefault "N/A"
-
-        numbers =
-            List.range 0 model.length
     in
         div []
-            [ button [ onClick ToggleIsTicking ]
+            [ div []
+                [ div [ style [ ( "display", "flex" ), ( "flex-wrap", "wrap" ) ] ] <|
+                    List.map viewDot model.dots
+                ]
+            , button [ onClick ToggleIsTicking ]
                 [ text
                     (if model.isTicking then
                         "Stop"
@@ -83,33 +106,8 @@ view model =
             , div []
                 [ text ("Time: " ++ time) ]
             , div []
-                [ text ("Total Ticks: " ++ toString model.total) ]
-            , div []
-                [ text ("Length: " ++ toString model.length) ]
-            , div []
-                [ div [ style [ ( "display", "flex" ), ( "flex-wrap", "wrap" ) ] ] <|
-                    List.map (viewListItem model.length) numbers
-                ]
+                [ text ("Total Ticks: " ++ toString model.totalTicks) ]
             ]
-
-
-lightColors =
-    Array.fromList
-        [ Color.lightRed
-        , Color.lightOrange
-        , Color.lightYellow
-        , Color.lightGreen
-        , Color.lightBlue
-        , Color.lightPurple
-        ]
-
-
-getColorAt n =
-    let
-        index =
-            n % Array.length lightColors
-    in
-        Array.get index lightColors
 
 
 colorToString color =
@@ -120,25 +118,20 @@ colorToString color =
         "rgba(" ++ toString red ++ "," ++ toString green ++ ", " ++ toString blue ++ ", " ++ toString alpha ++ ")"
 
 
-viewListItem length n =
+viewDot color =
     let
-        color =
-            getColorAt (length * n)
-                |> Maybe.map colorToString
-                |> Maybe.withDefault ""
-
-        tickIntervalInSeconds =
-            Time.inSeconds tickInterval
+        updateDotsIntervalInSeconds =
+            Time.inSeconds updateDotsInterval
 
         viewStyle =
             style
-                [ ( "backgroundColor", color )
+                [ ( "backgroundColor", colorToString color )
                 , ( "color", "white" )
                 , ( "width", "50px" )
                 , ( "height", "50px" )
                 , ( "border-radius", "25px" )
                 , ( "margin", "5px" )
-                , ( "transition", "all " ++ toString tickIntervalInSeconds ++ "s ease-out" )
+                , ( "transition", "all " ++ toString updateDotsIntervalInSeconds ++ "s ease-out" )
                 ]
     in
         div [ viewStyle ] []
