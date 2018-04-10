@@ -16,6 +16,10 @@ dotCount =
     2000
 
 
+dotWidth =
+    20
+
+
 updateDotsInterval =
     Time.second
 
@@ -60,14 +64,6 @@ generateDots =
 
 
 -- MODEL
-
-
-type alias Model =
-    { isTicking : Bool
-    , time : Maybe Time
-    , totalTicks : Int
-    , dots : List Color
-    }
 
 
 init =
@@ -166,19 +162,16 @@ toPx x =
 
 viewDot color =
     let
-        width =
-            20
-
         updateDotsIntervalInSeconds =
             Time.inSeconds updateDotsInterval
 
         viewStyle =
             style
                 [ ( "backgroundColor", colorToString color )
-                , ( "width", toPx width )
-                , ( "height", toPx width )
-                , ( "border-radius", toPx (width // 2) )
-                , ( "margin", toPx (width // 8) )
+                , ( "width", toPx dotWidth )
+                , ( "height", toPx dotWidth )
+                , ( "border-radius", toPx (dotWidth // 2) )
+                , ( "margin", toPx (dotWidth // 8) )
                 , ( "transition", "all " ++ toString updateDotsIntervalInSeconds ++ "s ease-out" )
                 ]
     in
