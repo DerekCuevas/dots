@@ -17,7 +17,7 @@ dotCount =
 
 
 updateDotsInterval =
-    Time.second * 5
+    Time.second
 
 
 colors =
@@ -28,6 +28,7 @@ colors =
         , Color.lightGreen
         , Color.lightBlue
         , Color.lightPurple
+        , Color.white
         ]
 
 
@@ -36,7 +37,7 @@ colors =
 
 
 randomColorGenerator =
-    Random.int 0 (Array.length colors)
+    Random.int 0 (Array.length colors - 1)
         |> Random.map
             (\n ->
                 colors
@@ -174,11 +175,10 @@ viewDot color =
         viewStyle =
             style
                 [ ( "backgroundColor", colorToString color )
-                , ( "color", "white" )
                 , ( "width", toPx width )
                 , ( "height", toPx width )
                 , ( "border-radius", toPx (width // 2) )
-                , ( "margin", "2px" )
+                , ( "margin", toPx (width // 8) )
                 , ( "transition", "all " ++ toString updateDotsIntervalInSeconds ++ "s ease-out" )
                 ]
     in
