@@ -9,12 +9,56 @@ import Color exposing (Color)
 import Array
 
 
+-- CONFIG
+
+
 dotCount =
-    300
+    2000
 
 
 updateDotsInterval =
-    Time.second
+    Time.second * 5
+
+
+colors =
+    Array.fromList
+        [ Color.lightRed
+        , Color.lightOrange
+        , Color.lightYellow
+        , Color.lightGreen
+        , Color.lightBlue
+        , Color.lightPurple
+        ]
+
+
+
+-- RANDOM GENERATORS
+
+
+randomColorGenerator =
+    Random.int 0 (Array.length colors)
+        |> Random.map
+            (\n ->
+                colors
+                    |> Array.get n
+                    |> Maybe.withDefault Color.white
+            )
+
+
+dotsGenerator =
+    Random.list dotCount randomColorGenerator
+
+
+
+-- COMMANDS
+
+
+generateDots =
+    Random.generate SetDots dotsGenerator
+
+
+
+-- MODEL
 
 
 type alias Model =
@@ -26,38 +70,18 @@ type alias Model =
 
 
 init =
-    { isTicking = True, time = Nothing, totalTicks = 0, dots = [] } ! []
+    { isTicking = True, time = Nothing, totalTicks = 0, dots = [] }
+        ! [ generateDots ]
+
+
+
+-- UPDATE
 
 
 type Msg
     = ToggleIsTicking
     | Tick Time
     | SetDots (List Color)
-
-
-randomColorGenerator =
-    let
-        colors =
-            Array.fromList
-                [ Color.lightRed
-                , Color.lightOrange
-                , Color.lightYellow
-                , Color.lightGreen
-                , Color.lightBlue
-                , Color.lightPurple
-                ]
-    in
-        Random.int 0 (Array.length colors - 1)
-            |> Random.map
-                (\n ->
-                    colors
-                        |> Array.get n
-                        |> Maybe.withDefault Color.white
-                )
-
-
-dotsGenerator =
-    Random.list dotCount randomColorGenerator
 
 
 update msg model =
@@ -70,10 +94,14 @@ update msg model =
                 | time = Just time
                 , totalTicks = model.totalTicks + 1
             }
-                ! [ Random.generate SetDots dotsGenerator ]
+                ! [ generateDots ]
 
         SetDots dots ->
             { model | dots = dots } ! []
+
+
+
+-- SUBSCRIPTIONS
 
 
 subscriptions model =
@@ -81,6 +109,10 @@ subscriptions model =
         Time.every updateDotsInterval Tick
     else
         Sub.none
+
+
+
+-- VIEW
 
 
 view model =
@@ -115,11 +147,27 @@ colorToString color =
         { red, green, blue, alpha } =
             Color.toRgb color
     in
-        "rgba(" ++ toString red ++ "," ++ toString green ++ ", " ++ toString blue ++ ", " ++ toString alpha ++ ")"
+        "rgba("
+            ++ toString red
+            ++ ", "
+            ++ toString green
+            ++ ", "
+            ++ toString blue
+            ++ ", "
+            ++ toString alpha
+            ++ ")"
+
+
+toPx : Int -> String
+toPx x =
+    toString x ++ "px"
 
 
 viewDot color =
     let
+        width =
+            20
+
         updateDotsIntervalInSeconds =
             Time.inSeconds updateDotsInterval
 
@@ -127,14 +175,18 @@ viewDot color =
             style
                 [ ( "backgroundColor", colorToString color )
                 , ( "color", "white" )
-                , ( "width", "50px" )
-                , ( "height", "50px" )
-                , ( "border-radius", "25px" )
-                , ( "margin", "5px" )
+                , ( "width", toPx width )
+                , ( "height", toPx width )
+                , ( "border-radius", toPx (width // 2) )
+                , ( "margin", "2px" )
                 , ( "transition", "all " ++ toString updateDotsIntervalInSeconds ++ "s ease-out" )
                 ]
     in
         div [ viewStyle ] []
+
+
+
+-- PROGRAM
 
 
 main =
