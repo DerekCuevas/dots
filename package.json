@@ -1,0 +1,14 @@
+{
+  "name": "dots",
+  "version": "1.0.0",
+  "repository": "https://github.com/DerekCuevas/dots.git",
+  "author": "Derek Cuevas <dccuevas2@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "elm-live ./src/Main.elm --dir=dist --open --output dist/index.html"
+  },
+  "dependencies": {
+    "elm": "^0.18.0",
+    "elm-live": "^2.7.5"
+  }
+}
