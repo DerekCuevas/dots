@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "elm-live ./src/Main.elm --dir=dist --open --output dist/index.html",
-    "build": "elm-make ./src/Main.elm --output docs/index.html"
+    "build": "elm-make ./src/Main.elm --output index.html"
   },
   "dependencies": {
     "elm": "^0.18.0",
