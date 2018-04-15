@@ -51,9 +51,9 @@ randomColorGenerator : Generator Color
 randomColorGenerator =
     Random.int 0 (Array.length colors - 1)
         |> Random.map
-            (\n ->
+            (\index ->
                 colors
-                    |> Array.get n
+                    |> Array.get index
                     |> Maybe.withDefault Color.white
             )
 
@@ -187,7 +187,7 @@ view model =
 viewDot : Float -> Color -> Html Msg
 viewDot borderRadius color =
     let
-        updateDotsIntervalInSeconds =
+        interval =
             Time.inSeconds updateDotsInterval
 
         { red, green, blue, alpha } =
@@ -201,7 +201,7 @@ viewDot borderRadius color =
                 , Css.borderRadius (Css.px borderRadius)
                 , Css.margin (Css.px 4)
                 ]
-            , style [ ( "transition", "all " ++ toString updateDotsIntervalInSeconds ++ "s ease-out" ) ]
+            , style [ ( "transition", "all " ++ toString interval ++ "s ease-out" ) ]
             ]
             []
 
