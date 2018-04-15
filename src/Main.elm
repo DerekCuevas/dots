@@ -13,15 +13,15 @@ import Array
 
 
 dotCount =
-    2000
+    99
 
 
 dotWidth =
-    20
+    150
 
 
 updateDotsInterval =
-    Time.second
+    Time.second * 2
 
 
 colors =
@@ -54,6 +54,10 @@ dotsGenerator =
     Random.list dotCount randomColorGenerator
 
 
+borderRadiusGenerator =
+    Random.float 0 (dotWidth / 2)
+
+
 
 -- COMMANDS
 
@@ -62,13 +66,28 @@ generateDots =
     Random.generate SetDots dotsGenerator
 
 
+generateBorderRadius =
+    Random.generate SetBorderRadius borderRadiusGenerator
+
+
+generate =
+    [ generateDots
+    , generateBorderRadius
+    ]
+
+
 
 -- MODEL
 
 
 init =
-    { isTicking = True, time = Nothing, totalTicks = 0, dots = [] }
-        ! [ generateDots ]
+    { isTicking = True
+    , time = Nothing
+    , totalTicks = 0
+    , dots = []
+    , borderRadius = dotWidth / 2
+    }
+        ! generate
 
 
 
@@ -79,6 +98,7 @@ type Msg
     = ToggleIsTicking
     | Tick Time
     | SetDots (List Color)
+    | SetBorderRadius Float
 
 
 update msg model =
@@ -91,10 +111,13 @@ update msg model =
                 | time = Just time
                 , totalTicks = model.totalTicks + 1
             }
-                ! [ generateDots ]
+                ! generate
 
         SetDots dots ->
             { model | dots = dots } ! []
+
+        SetBorderRadius borderRadius ->
+            { model | borderRadius = borderRadius } ! []
 
 
 
@@ -119,10 +142,10 @@ view model =
                 |> Maybe.map toString
                 |> Maybe.withDefault "N/A"
     in
-        div []
+        div [ style [ ( "backgroundColor", "black" ) ] ]
             [ div []
                 [ div [ style [ ( "display", "flex" ), ( "flex-wrap", "wrap" ) ] ] <|
-                    List.map viewDot model.dots
+                    List.map (viewDot model.borderRadius) model.dots
                 ]
             , button [ onClick ToggleIsTicking ]
                 [ text
@@ -132,10 +155,6 @@ view model =
                         "Start"
                     )
                 ]
-            , div []
-                [ text ("Time: " ++ time) ]
-            , div []
-                [ text ("Total Ticks: " ++ toString model.totalTicks) ]
             ]
 
 
@@ -155,12 +174,11 @@ colorToString color =
             ++ ")"
 
 
-toPx : Int -> String
 toPx x =
     toString x ++ "px"
 
 
-viewDot color =
+viewDot borderRadius color =
     let
         updateDotsIntervalInSeconds =
             Time.inSeconds updateDotsInterval
@@ -170,8 +188,8 @@ viewDot color =
                 [ ( "backgroundColor", colorToString color )
                 , ( "width", toPx dotWidth )
                 , ( "height", toPx dotWidth )
-                , ( "border-radius", toPx (dotWidth // 2) )
-                , ( "margin", toPx (dotWidth // 8) )
+                , ( "border-radius", toPx borderRadius )
+                , ( "margin", "4px" )
                 , ( "transition", "all " ++ toString updateDotsIntervalInSeconds ++ "s ease-out" )
                 ]
     in
