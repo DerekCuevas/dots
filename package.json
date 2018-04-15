@@ -5,7 +5,8 @@
   "author": "Derek Cuevas <dccuevas2@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "elm-live ./src/Main.elm --dir=dist --open --output dist/index.html"
+    "dev": "elm-live ./src/Main.elm --dir=dist --open --output dist/index.html",
+    "build": "elm-make ./src/Main.elm --output docs/index.html"
   },
   "dependencies": {
     "elm": "^0.18.0",
